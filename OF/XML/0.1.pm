@@ -1,0 +1,488 @@
+package OF::XML;
+
+use OF;
+use XMLNode;
+use strict;
+
+our @ISA = qw(OF);
+
+#form
+
+sub form_start
+{
+	my ($this, %prefs) = @_;
+
+	# Get prefs
+	$this->_getprefs('form', \%prefs);
+
+	my ($key, $val);
+	my $attr = "";
+	while (($key, $val) = each %prefs)
+	{
+		$attr .= qq( $key="$val");
+	}
+
+	return "<form$attr>";
+}
+
+sub form_end
+{
+	return "</form>";
+}
+
+sub fieldset
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, that first arg is actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	# Get prefs
+	$this->_getprefs('fieldset', $r_prefs);
+
+	my $node = XMLNode->new('fieldset', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+#table
+
+sub table_start
+{
+	my ($this, %prefs) = @_;
+	my ($key, $val);
+
+	# Get prefs
+	$this->_getprefs('table', \%prefs);
+
+	# Column attributes
+	my @cols = ();
+	my $cols_output = "";
+	if (exists $prefs{cols} && ref $prefs{cols} eq "ARRAY")
+	{
+		@cols = @{ $prefs{cols} };
+		delete $prefs{cols};
+	}
+	if (@cols)
+	{
+		my $cols_node = XMLNode->new('cols');
+		my ($col_prefs, $col);
+
+		foreach $col_prefs (@cols)
+		{
+			$col_node = XMLNode->new('col');
+
+			$this->_getprefs('col', $col_prefs);
+
+			while (($key, $val) = each %$col_prefs)
+			{
+				$col_node->set_attribute($key, $val);
+			}
+
+			$cols_node->append_value($col_node->build());
+		}
+
+		$cols_output = $cols_node->build();
+	}
+
+	my $prefs = "";
+	while (($key,$val) = each %prefs)
+	{
+		$prefs .= qq( $key="$val");
+	}
+
+	return "<table$prefs>$cols_output";
+}
+
+sub table_end
+{
+	return "</table>";
+}
+
+sub table_row
+{
+	my ($this,@cols) = @_;
+
+	my $node = XMLNode->new('table_row');
+
+	my ($r_col_prefs,$col);
+	my ($key,$val);
+	foreach $r_col_prefs (@cols)
+	{
+		$r_col_prefs = {value => $r_col_prefs} unless ref $r_col_prefs eq "HASH";
+
+		$this->_getprefs('table_col', $r_col_prefs);
+
+		$col = XMLNode->new('table_col');
+
+		if (exists $r_col_prefs->{value})
+		{
+			$col->set_value($r_col_prefs->{value});
+			delete $r_col_prefs->{value};
+		}
+
+		while (($key,$val) = each %$r_col_prefs)
+		{
+			$col->set_attribute($key,$val);
+		}
+
+		$node->append_value($col->build());
+	}
+
+	return $node->build();
+}
+
+sub table_head
+{
+	my ($this ,@cols) = @_;
+
+	my $node = XMLNode->new('table_head_row');
+
+	my ($r_col_prefs, $col);
+	my ($key, $val);
+	foreach $r_col_prefs (@cols)
+	{
+		$r_col_prefs = {value => $r_col_prefs} unless ref $r_col_prefs eq "HASH";
+
+		$this->_getprefs('table_head_col', $r_col_prefs);
+
+		$col = XMLNode->new('table_head_col');
+
+		if (exists $r_col_prefs->{value})
+		{
+			$col->set_value($r_col_prefs->{value});
+			delete $r_col_prefs->{value};
+		}
+
+		while (($key,$val) = each %$r_col_prefs)
+		{
+			$col->set_attribute($key, $val);
+		}
+
+		$node->append_value($col->build());
+	}
+
+	return $node->build();
+}
+
+sub p
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('p', $r_prefs);
+
+	my $node = XMLNode->new('p',join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub link
+{
+	my ($this, %prefs) = @_;
+
+	$this->_getprefs('link', \%prefs);
+
+	my $node = XMLNode->new('link');
+
+	if (exists $prefs{value})
+	{
+		$node->set_value($prefs{value});
+		delete $prefs{value};
+	}
+
+	my ($key, $val);
+	while (($key, $val) = each %prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub hr
+{
+	my ($this, %prefs) = @_;
+
+	$this->_getprefs('hr', \%prefs);
+
+	my $node = XMLNode->new('hr');
+
+	my ($key, $val);
+	while (($key, $val) = each %prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub input
+{
+	my ($this, %prefs) = @_;
+	my ($key, $val);
+
+	my $type = $prefs{type} eq "select" || $prefs{type} eq "textarea" ?
+			$prefs{type} : "input";
+
+	$this->_getprefs($type, \%prefs);
+
+	my $node = XMLNode->new('input');
+
+	if ($prefs{type} eq "textarea" && exists $prefs{value})
+	{
+		$node->set_value($prefs{value});
+		delete $prefs{value}
+	}
+
+	if ($prefs{type} eq "select")
+	{
+		my %options = %{ $prefs{options} };
+		delete $prefs{options};
+		my $opt_node;
+
+		while (($key, $val) = each %options)
+		{
+			$opt_node = XMLNode->new('option', $val);
+			$opt_node->set_attribute('value', $key);
+			$node->append_value($opt_node->build());
+		}
+	}
+
+	while (($key, $val) = each %prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub br
+{
+	return XMLNode->new('br')->build();
+}
+
+sub list_start
+{
+	my ($this, $type) = @_;
+
+	my %types =
+	(
+		OF::LIST_UN() => "unordered",
+		OF::LIST_OD() => "ordered",
+	);
+
+	WASP::throw("Unknown list type; type: $type") unless exists $types{$type};
+
+	return qq(<list type="$types{$type}">);
+}
+
+sub list_end
+{
+	return "</list>";
+}
+
+sub list_item
+{
+	my ($this, $item) = @_;
+	return XMLNode->new('list_item', $item)->build();
+}
+
+#list
+
+sub header
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('header', $r_prefs);
+
+	my $node = XMLNode->new('header', join '', @data);
+
+	if (exists $r_prefs->{value})
+	{
+		$node->set_value($r_prefs->{value});
+		delete $r_prefs->{value};
+	}
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub emph
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('emph', $r_prefs);
+
+	my $node = XMLNode->new('emph', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub pre
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('pre', $r_prefs);
+
+	my $node = XMLNode->new('pre', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub code
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('code', $r_prefs);
+
+	my $node = XMLNode->new('code', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub strong
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('strong', $r_prefs);
+
+	my $node = XMLNode->new('strong', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub div
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, the first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('div', $r_prefs);
+
+	my $node = XMLNode->new('div', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub img
+{
+	my ($this, %prefs) = @_;
+
+	$this->_getprefs('img', \%prefs);
+	
+	my $node = XMLNode->new('img');
+
+	my ($key, $val);
+	while (($key, $val) = each %prefs)
+	{
+		$node->set_attribute($key, $val);
+	}
+
+	return $node->build();
+}
+
+sub email
+{
+	my ($this,$email) = shift;
+	return XMLNode->new('email', $email)->build();
+}
+
+return 1;
