@@ -262,6 +262,8 @@ sub input
 		my %options = %{ $prefs{options} };
 		delete $prefs{options};
 
+		$this->_getprefs('select', \%prefs);
+
 		my $sel_el = XML::Element->new('select');
 
 		my $opt_el;
@@ -293,6 +295,8 @@ sub input
 	} elsif ($prefs{type} eq "textarea") {
 
 		delete $prefs{type};
+
+		$this->_getprefs('textarea', \%prefs);
 
 		my $el = XML::Element->new('textarea');
 
