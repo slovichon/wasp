@@ -416,7 +416,7 @@ sub list_end
 
 sub list_item
 {
-	my ($this, @data) = shift;
+	my ($this, @data) = @_;
 	my $item = join '', @data;
 	return XML::Element->new('li', $item)->build();
 }
