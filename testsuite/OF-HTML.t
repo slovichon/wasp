@@ -119,39 +119,42 @@ $a = $of->img(src=>"hi.png", alt=>"hi");
 print $a, "\n";
 _ $a eq qq{<img alt="hi" src="hi.png" />};
 
-__END__
-
-print "\nForm test:\n";
-print $of->form
+test "form";
+$a = $of->form
 	(
-		{method=>"get"}, "\n\t",
-		$of->fieldset(
-		$of->input(type=>"text", name=>"fieldfoo", label=>"foo"), "\n\t\t",
-		$of->input(type=>"textarea", name=>"hi", rows=>8, cols=>45), "\n\t\t",
-		$of->input(type=>"checkbox", name=>"hi"), "\n\t\t",
-		$of->input(type=>"select", name=>"myslct", options=>{b=>"B", a=>"A"}, value=>"a"), "\n\t\t",
-		$of->input(type=>"submit", value=>"press me"), "\n\t",), "\n"
+		{method=>"get"},
+		$of->fieldset
+		(
+			$of->input(type=>"text", name=>"fieldfoo", id=>"foo_field", label=>"foo"),
+			$of->input(type=>"textarea", name=>"hi", rows=>8, cols=>45),
+			$of->input(type=>"checkbox", name=>"hi"),
+			$of->input(type=>"select", name=>"myslct", options=>{b=>"B", a=>"A"}, value=>"a"),
+			$of->input(type=>"submit", value=>"press me")
+		)
 	);
+print $a, "\n";
+_ $a = qq{<form enctype="application/x-www-form-urlencoded" method="get" action="/OF-HTML.t"><fieldset><label for="foo_field"><input id="foo_field" type="text" name="fieldfoo" /> foo</label><textarea cols="45" rows="8" name="hi"></textarea><input type="checkbox" name="hi" /><select name="myslct"><option selected="selected" value="a">A</option><option value="b">B</option></select><input value="press me" type="submit" /></fieldset></form>\n};
 
-print "\n-------------------------\n";
-
-print "Table test:\n";
-print $of->table
+test "table";
+$a = $of->table
 	(
-		{class=>"foo", border=>0, cols=>[{width=>1},{width=>2},{width=>3},{width=>4},{width=>5}]}, "\n",
-		$of->table_head({colspan=>4, value=>"foo"}, "bar"), "\n",
-		$of->table_row("foo", {value=>"bar"}, {colspan=>3, value=>"glarch"}), "\n",
+		{class=>"foo", border=>0, cols=>[{width=>1},{width=>2},{width=>3},{width=>4},{width=>5}]},
+		$of->table_head({colspan=>4, value=>"foo"}, "bar"),
+		$of->table_row("foo", {value=>"bar"}, {colspan=>3, value=>"glarch"})
 	);
+print $a, "\n";
+_ $a eq qq{<table border="0" class="foo"><colgroup><col width="1" /><col width="2" /><col width="3" /><col width="4" /><col width="5" /></colgroup><tr><th colspan="4">foo</th><th>bar</th></tr><tr><td>foo</td><td>bar</td><td colspan="3">glarch</td></tr></table>};
 
-print "\n-------------------------\n";
-
-print "List test:\n";
-print $of->list
+test "list";
+$a = $of->list
 	(
 		OF::LIST_UN,
 		qw(a b c d e)
 	);
+print $a, "\n";
+_ $a eq "<ul><li>a</li><li>b</li><li>c</li><li>d</li><li>e</li></ul>";
 
-print "\n";
+
+test "All tests completed successfully.";
 
 exit 0;
