@@ -60,7 +60,7 @@ sub throw
 	}
 
 	my $errmsg = "WASP Error: " . ($err || "(empty)");
-	
+
 	unless ($modpkg eq "main")
 	{
 		$errmsg .= "; Module: $modpkg:$modline";
@@ -70,7 +70,7 @@ sub throw
 	$errmsg .=	"; Backtrace: $file:$line" .
 			"; Date: " . localtime(time) .
 			"\n";
-	
+
 	if (defined $this->{"log"})
 	{
 		local *F;

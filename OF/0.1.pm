@@ -60,9 +60,9 @@ sub _getprefs
 sub _loadpref
 {
 	my ($this, $key, $val) = @_;
-	
-	
-	
+
+
+
 	return;
 }
 =cut
@@ -83,10 +83,10 @@ sub fieldset;
 sub table
 {
 	my ($this, $r_prefs, @data) = @_;
-	
+
 	# First pref arg is optional
 	unshift @data, $r_prefs unless ref $r_prefs eq "HASH";
-	
+
 	return	$this->table_start(%$r_prefs) .
 		join('', @data) .
 		$this->table_end(%$r_prefs);
@@ -105,7 +105,7 @@ sub br;
 sub list
 {
 	my ($this, $type, @data) = @_;
-	
+
 	# First pref arg is optional
 #	unshift @data, $r_prefs unless ref $r_prefs eq "HASH";
 

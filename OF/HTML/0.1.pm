@@ -13,7 +13,7 @@ sub form_start
 {
 	my ($this, %prefs) = @_;
 	my $attr = "";
-	
+
 	$this->_getprefs('form', \%prefs);
 
 	my ($key, $val);
@@ -21,7 +21,7 @@ sub form_start
 	{
 		$attr .= qq( $key="$val");
 	}
-	
+
 	return "<form$attr>";
 }
 
@@ -43,7 +43,7 @@ sub table_start
 	my ($key, $val);
 	my $attr = "";
 	my $cols_output = "";
-	
+
 	$this->_getprefs('table', \%prefs);
 
 	if (exists $prefs{cols} && ref $prefs{cols} eq "ARRAY")
@@ -73,7 +73,7 @@ sub table_start
 	{
 		$attr .= qq( $key="$val");
 	}
-	
+
 	return "<table$attr>$cols_output";
 }
 
@@ -189,17 +189,17 @@ sub link
 sub hr
 {
 	my ($this, %prefs) = @_;
-	
+
 	$this->_getprefs('hr', \%prefs);
-	
+
 	my $el = XML::Element->new('hr');
-	
+
 	my ($key, $val);
 	while (($key, $val) = each %prefs)
 	{
 		$el->set_attribute($key, $val);
 	}
-	
+
 	return $el->build();
 }
 
@@ -239,9 +239,9 @@ sub input
 
 		my %options = %{ $prefs{options} };
 		delete $prefs{options};
-	
+
 		my $sel_el = XML::Element->new('select');
-		
+
 		my $opt_el;
 		while (($key, $val) = each %options)
 		{
@@ -256,14 +256,14 @@ sub input
 
 			$sel_el->append_value($opt_el->build());
 		}
-		
+
 		while (($key, $val) = each %prefs)
 		{
 			$sel_el->set_attribute($key, $val);
 		}
-		
+
 		return $sel_el->build;
-		
+
 	} elsif ($prefs{type} eq "textarea") {
 
 		delete $prefs{type};
@@ -281,7 +281,7 @@ sub input
 		{
 			$el->set_attribute($key, $val);
 		}
-		
+
 		return $el->build();
 	} else {
 		my $el = XML::Element->new('input');

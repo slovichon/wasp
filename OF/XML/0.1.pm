@@ -468,7 +468,7 @@ sub img
 	my ($this, %prefs) = @_;
 
 	$this->_getprefs('img', \%prefs);
-	
+
 	my $el = XML::Element->new('img');
 
 	my ($key, $val);
