@@ -121,10 +121,15 @@ sub query
 
 	} elsif ($type == DB_ROW) {
 
-		my %row = ();
-		@row{@{ $this->{sth}->{NAME} }} = $this->{sth}->fetchrow;
-		$this->{sth}->finish();
-		return %row;
+		if ($DBH::rows) {
+			my %row = ();
+			@row{@{ $this->{sth}->{NAME} }} = $this->{sth}->fetchrow;
+			$this->{sth}->finish();
+			return %row;
+		} else {
+			$this->{sth}->finish();
+			return ();
+		}
 
 	} elsif ($type == DB_ROWS) {
 
