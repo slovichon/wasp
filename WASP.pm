@@ -2,7 +2,9 @@ package WASP;
 # $Id$
 
 use strict;
-use constant FALSE => 0;
+
+# Should we export TRUE and FALSE?
+use constant FALSE => "";
 
 our $VERSION = 0.1;
 
@@ -15,7 +17,7 @@ sub new
 		"log"		=> undef,
 		display		=> FALSE,
 		handler		=> undef,
-		}, ref($class) || $class;
+	}, ref($class) || $class;
 }
 
 sub die
@@ -51,18 +53,16 @@ sub throw
 	my ($this, $err) = @_;
 	my ($pkg, $file, $line) = caller;
 
-	my ($modpkg,$modline) = ($pkg,$line);
+	my ($modpkg, $modline) = ($pkg, $line);
 
 	# Backtrace through subs/modules/files
-	for (my $i = 0; $pkg ne "main" || !defined $pkg; $i++)
-	{
+	for (my $i = 0; $pkg ne "main" || !defined $pkg; $i++) {
 		($pkg, $file, $line) = caller $i;
 	}
 
 	my $errmsg = "WASP Error: " . ($err || "(empty)");
 
-	unless ($modpkg eq "main")
-	{
+	unless ($modpkg eq "main") {
 		$errmsg .= "; Module: $modpkg:$modline";
 	}
 
@@ -79,7 +79,8 @@ sub throw
 			print F $errmsg;
 			close F;
 		} else {
-			$errmsg .= "Could not log error; file: " . $this->{"log"} . "; OS Error: $!\n";
+			$errmsg .= "Could not log error; file: " . $this->{"log"} .
+					"; OS Error: $!\n";
 		}
 	}
 
