@@ -51,8 +51,10 @@ sub build
 		$out .= qq( $key="$val");
 	}
 
-	if (defined $this->{value})
+	if (defined $this->{value} or $this->{name} eq "a" or
+		$this->{name} eq "textarea")
 	{
+		$this->{value} = "" unless defined $this->{value};
 		$out .= ">$this->{value}</$this->{name}>";
 	} else {
 		$out .= " />";
