@@ -1,1 +1,14 @@
 die when misargued wasp objects? (for OF, etc)
+DBH::query("
+	SELECT
+		*
+	FROM
+		foo
+	WHERE
+		num = %d
+	AND 	field = '%s'
+	AND 	field LIKE '%w'
+	AND	field REGEX '%r' ", $num, $str, $wild, $regex);
+turn templates into compiled subs
+'last modified' to default story template
+table join specification mechanism for fundamental accessors (story_get and babs_users.username)
