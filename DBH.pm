@@ -66,8 +66,11 @@ sub new
 	# Build DSN
 	my $dsn = "dbi:$this->{driver}:$this->{database}";
 
-	$dsn .= "\@$this->{host}" if exists $this->{host};
-	$dsn .=  ":$this->{port}" if exists $this->{port};
+	if (exists $this->{host})
+	{
+		$this->throw("No remote RDBMS port specified") unless exists $this->{port};
+		$dsn .= ";hostname=$this->{host};port=$this->{port}";
+	}
 
 	# Build DBI::connect argument list
 	my @args = ($dsn);

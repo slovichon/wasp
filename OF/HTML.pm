@@ -573,29 +573,26 @@ sub span
 	return $el->build();
 }
 
-sub div
+sub start_div
 {
-	my ($this, $r_prefs, @data) = @_;
-
-	unless (ref $r_prefs eq "HASH")
+	my ($this, %prefs) = @_;
+	$this->_getprefs('div', \%prefs);
+	my ($k, $v);
+	my $el = "<div";
+	while (($k, $v) = each %prefs)
 	{
-		# Oops, first arg was actually more data
-		unshift @data, $r_prefs;
-		$r_prefs = {};
+		$el .= qq( $k="$v");
 	}
-
-	$this->_getprefs('div', $r_prefs);
-
-	my $el = XML::Element->new('div', join '', @data);
-
-	my ($key, $val);
-	while (($key, $val) = each %$r_prefs)
-	{
-		$el->set_attribute($key, $val);
-	}
-
-	return $el->build();
+	return $el;
 }
+
+sub end_div
+{
+	my ($this, %prefs) = @_;
+	return "</div>";
+}
+
+#sub div;
 
 sub img
 {

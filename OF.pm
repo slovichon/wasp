@@ -84,10 +84,12 @@ sub fieldset;
 sub table
 {
 	my ($this, $r_prefs, @data) = @_;
-
-	# First pref arg is optional
-	unshift @data, $r_prefs unless ref $r_prefs eq "HASH";
-
+	# Preferences are optional
+	unless (ref $r_prefs eq "HASH")
+	{
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
 	return	$this->table_start(%$r_prefs) .
 		join('', @data) .
 		$this->table_end(%$r_prefs);
@@ -106,10 +108,6 @@ sub br;
 sub list
 {
 	my ($this, $type, @data) = @_;
-
-	# First pref arg is optional
-#	unshift @data, $r_prefs unless ref $r_prefs eq "HASH";
-
 	my $out = $this->list_start($type);
 	$out .= $this->list_item($_) foreach @data;
 	$out .= $this->list_end($type);
@@ -125,7 +123,23 @@ sub emph;
 sub pre;
 sub code;
 sub strong;
-sub div;
+sub start_div;
+sub end_div;
+
+sub div
+{
+	my ($this, $r_prefs, @data) = @_;
+	# Preferences are optional
+	unless (ref $r_prefs eq "HASH")
+	{
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+	return 	$this->start_div(%$r_prefs) .
+		join('', @data) .
+		$this->end_div(%$r_prefs);
+}
+
 sub span;
 sub img;
 sub email;
