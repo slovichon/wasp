@@ -2,7 +2,7 @@
 # $Id$
 
 use strict;
-use DBH::MySQL;
+use DBH::MySQL qw(:all);
 
 my $dbh = DBH::MySQL->new(host=>"12.226.98.118", database=>"test");
 
