@@ -86,7 +86,7 @@ sub new {
 sub throw {
 	my ($this, $err) = @_;
 
-	$err .=	"; DBI error: " . ($this->{dbh} && $DBI::err ? $DBI::errstr : "(none)") .
+	$err .= "; DBI error: " . ($this->{dbh} && $DBI::err ? $DBI::errstr : "(none)") .
 		"; Username: " . (exists $this->{username} && defined $this->{username} ? $this->{username} : "NONE") .
 		"; Using a password? " . (exists $this->{password} ? "yes" : "no") .
 		"; Host: " .     (exists $this->{host}     && defined $this->{host}     ? $this->{host}     : "NONE") .
@@ -108,8 +108,8 @@ sub query {
 	my $sth;
 
 	$sth = $this->{sth} = $this->{dbh}->prepare($sql)
-			or $this->throw("Cannot prepare query; SQL: $sql");
-	$sth->execute() or $this->throw("Cannot execute query; SQL: $sql");
+			or $this->throw("Cannot prepare query; SQL: $sql\n");
+	$sth->execute() or $this->throw("Cannot execute query; SQL: $sql\n");
 
 	if ($type == DB_COL) {
 		my $field = ($sth->fetchrow)[0];
@@ -155,6 +155,7 @@ sub fetch_row {
 sub prepare_str {
 	my ($this, $str, $type) = @_;
 
+	# Default type to SQL_REG?
 	if ($type == SQL_REG) {
 		$str =~ s/['"\\]/\\$&/g;
 	} elsif ($type == SQL_WILD) {
