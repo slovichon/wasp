@@ -141,7 +141,7 @@ sub fetch_row {
 	my $obj = shift;
 	my %row = ();
 
-	if ($obj->{rows} && $obj->{rows} == 0) {
+	unless ($obj->{rows} && $obj->{rows} > 0) {
 		$obj->{sth}->finish();
 		return;
 	}
