@@ -171,12 +171,6 @@ sub link
 
 	my $el = XML::Element->new('a');
 
-	if (exists $prefs{value})
-	{
-		$el->set_value($prefs{value});
-		delete $prefs{value};
-	}
-
 	my @test = %prefs;
 	if (@test == 2 && $test[0] ne "name")
 	{
@@ -185,7 +179,13 @@ sub link
 			href  => $test[1],
 		);
 	}
-	
+
+	if (exists $prefs{value})
+	{
+		$el->set_value($prefs{value});
+		delete $prefs{value};
+	}
+
 	my ($key, $val);
 	while (($key, $val) = each %prefs)
 	{

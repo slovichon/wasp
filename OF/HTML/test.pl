@@ -13,8 +13,14 @@ my $of = OF::HTML->new($w,{
 					method=>"post",
 					enctype=>"application/x-www-form-urlencoded",
 					action=>CGI::url(-absolute=>1)
-				}
+				},
+				header=>{size=>3}
 			});
+
+print $of->header({class=>"foo"}, "hi"),"\n",
+	$of->link(href=>"this is the href", value=>"this is the val"), "\n";
+
+__END__
 
 print	"Small tests:\n",
 	$of->p("hello there"), "\n",
