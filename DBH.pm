@@ -2,7 +2,7 @@ package DBH;
 # $Id$
 
 use Exporter;
-use DBI;
+#use DBI;
 use strict;
 
 our $VERSION = 0.1;
@@ -131,6 +131,7 @@ sub query
 	} elsif ($type == DBH::DB_NULL) {
 
 		my $rows = $DBI::rows;
+		$this->{last_insert_id} = $this->{sth}->{insertid} if $this->{save_insert_id};
 		$this->{sth}->finish();
 		return $rows;
 	} else {
@@ -186,10 +187,16 @@ sub DESTROY
 }
 =cut
 
-sub last_insert_id
+sub save_insert_id
 {
 	my $this = shift;
-	return $this->{sth}->{insertid};
+	$this->{save_insert_id} = TRUE;
+}
+
+sub get_insert_id
+{
+	my $this = shift;
+	return $this->{last_insert_id};
 }
 
 return 1;
