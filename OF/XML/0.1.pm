@@ -2,7 +2,7 @@ package OF::XML;
 # $Id$
 
 use OF;
-use XMLNode;
+use XML::Element;
 use strict;
 
 our @ISA = qw(OF);
@@ -45,15 +45,15 @@ sub fieldset
 	# Get prefs
 	$this->_getprefs('fieldset', $r_prefs);
 
-	my $node = XMLNode->new('fieldset', join '', @data);
+	my $el = XML::Element->new('fieldset', join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 #table
@@ -76,24 +76,24 @@ sub table_start
 	}
 	if (@cols)
 	{
-		my $cols_node = XMLNode->new('cols');
+		my $cols_el = XML::Element->new('cols');
 		my ($col_prefs, $col);
 
 		foreach $col_prefs (@cols)
 		{
-			$col_node = XMLNode->new('col');
+			$col_el = XML::Element->new('col');
 
 			$this->_getprefs('col', $col_prefs);
 
 			while (($key, $val) = each %$col_prefs)
 			{
-				$col_node->set_attribute($key, $val);
+				$col_el->set_attribute($key, $val);
 			}
 
-			$cols_node->append_value($col_node->build());
+			$cols_el->append_value($col_el->build());
 		}
 
-		$cols_output = $cols_node->build();
+		$cols_output = $cols_el->build();
 	}
 
 	my $prefs = "";
@@ -114,7 +114,7 @@ sub table_row
 {
 	my ($this,@cols) = @_;
 
-	my $node = XMLNode->new('table_row');
+	my $el = XML::Element->new('table_row');
 
 	my ($r_col_prefs,$col);
 	my ($key,$val);
@@ -124,7 +124,7 @@ sub table_row
 
 		$this->_getprefs('table_col', $r_col_prefs);
 
-		$col = XMLNode->new('table_col');
+		$col = XML::Element->new('table_col');
 
 		if (exists $r_col_prefs->{value})
 		{
@@ -137,17 +137,17 @@ sub table_row
 			$col->set_attribute($key,$val);
 		}
 
-		$node->append_value($col->build());
+		$el->append_value($col->build());
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub table_head
 {
 	my ($this ,@cols) = @_;
 
-	my $node = XMLNode->new('table_head_row');
+	my $el = XML::Element->new('table_head_row');
 
 	my ($r_col_prefs, $col);
 	my ($key, $val);
@@ -157,7 +157,7 @@ sub table_head
 
 		$this->_getprefs('table_head_col', $r_col_prefs);
 
-		$col = XMLNode->new('table_head_col');
+		$col = XML::Element->new('table_head_col');
 
 		if (exists $r_col_prefs->{value})
 		{
@@ -170,10 +170,10 @@ sub table_head
 			$col->set_attribute($key, $val);
 		}
 
-		$node->append_value($col->build());
+		$el->append_value($col->build());
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub p
@@ -189,15 +189,15 @@ sub p
 
 	$this->_getprefs('p', $r_prefs);
 
-	my $node = XMLNode->new('p',join '', @data);
+	my $el = XML::Element->new('p',join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub link
@@ -206,21 +206,21 @@ sub link
 
 	$this->_getprefs('link', \%prefs);
 
-	my $node = XMLNode->new('link');
+	my $el = XML::Element->new('link');
 
 	if (exists $prefs{value})
 	{
-		$node->set_value($prefs{value});
+		$el->set_value($prefs{value});
 		delete $prefs{value};
 	}
 
 	my ($key, $val);
 	while (($key, $val) = each %prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub hr
@@ -229,15 +229,15 @@ sub hr
 
 	$this->_getprefs('hr', \%prefs);
 
-	my $node = XMLNode->new('hr');
+	my $el = XML::Element->new('hr');
 
 	my ($key, $val);
 	while (($key, $val) = each %prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub input
@@ -250,11 +250,11 @@ sub input
 
 	$this->_getprefs($type, \%prefs);
 
-	my $node = XMLNode->new('input');
+	my $el = XML::Element->new('input');
 
 	if ($prefs{type} eq "textarea" && exists $prefs{value})
 	{
-		$node->set_value($prefs{value});
+		$el->set_value($prefs{value});
 		delete $prefs{value}
 	}
 
@@ -262,27 +262,27 @@ sub input
 	{
 		my %options = %{ $prefs{options} };
 		delete $prefs{options};
-		my $opt_node;
+		my $opt_el;
 
 		while (($key, $val) = each %options)
 		{
-			$opt_node = XMLNode->new('option', $val);
-			$opt_node->set_attribute('value', $key);
-			$node->append_value($opt_node->build());
+			$opt_el = XML::Element->new('option', $val);
+			$opt_el->set_attribute('value', $key);
+			$el->append_value($opt_el->build());
 		}
 	}
 
 	while (($key, $val) = each %prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub br
 {
-	return XMLNode->new('br')->build();
+	return XML::Element->new('br')->build();
 }
 
 sub list_start
@@ -308,7 +308,7 @@ sub list_end
 sub list_item
 {
 	my ($this, $item) = @_;
-	return XMLNode->new('list_item', $item)->build();
+	return XML::Element->new('list_item', $item)->build();
 }
 
 #list
@@ -326,21 +326,21 @@ sub header
 
 	$this->_getprefs('header', $r_prefs);
 
-	my $node = XMLNode->new('header', join '', @data);
+	my $el = XML::Element->new('header', join '', @data);
 
 	if (exists $r_prefs->{value})
 	{
-		$node->set_value($r_prefs->{value});
+		$el->set_value($r_prefs->{value});
 		delete $r_prefs->{value};
 	}
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub emph
@@ -356,15 +356,15 @@ sub emph
 
 	$this->_getprefs('emph', $r_prefs);
 
-	my $node = XMLNode->new('emph', join '', @data);
+	my $el = XML::Element->new('emph', join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub pre
@@ -380,15 +380,15 @@ sub pre
 
 	$this->_getprefs('pre', $r_prefs);
 
-	my $node = XMLNode->new('pre', join '', @data);
+	my $el = XML::Element->new('pre', join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub code
@@ -404,15 +404,15 @@ sub code
 
 	$this->_getprefs('code', $r_prefs);
 
-	my $node = XMLNode->new('code', join '', @data);
+	my $el = XML::Element->new('code', join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub strong
@@ -428,15 +428,15 @@ sub strong
 
 	$this->_getprefs('strong', $r_prefs);
 
-	my $node = XMLNode->new('strong', join '', @data);
+	my $el = XML::Element->new('strong', join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub div
@@ -452,15 +452,15 @@ sub div
 
 	$this->_getprefs('div', $r_prefs);
 
-	my $node = XMLNode->new('div', join '', @data);
+	my $el = XML::Element->new('div', join '', @data);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub img
@@ -469,21 +469,21 @@ sub img
 
 	$this->_getprefs('img', \%prefs);
 	
-	my $node = XMLNode->new('img');
+	my $el = XML::Element->new('img');
 
 	my ($key, $val);
 	while (($key, $val) = each %prefs)
 	{
-		$node->set_attribute($key, $val);
+		$el->set_attribute($key, $val);
 	}
 
-	return $node->build();
+	return $el->build();
 }
 
 sub email
 {
 	my ($this,$email) = shift;
-	return XMLNode->new('email', $email)->build();
+	return XML::Element->new('email', $email)->build();
 }
 
 return 1;
