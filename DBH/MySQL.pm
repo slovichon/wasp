@@ -18,4 +18,10 @@ sub new
 	my $this = $class->SUPER::new(%prefs);
 }
 
+sub last_insert_id
+{
+	my ($this) = @_;
+	return $this->{dbh}->{mysql_insertid};
+}
+
 return 1;

@@ -187,16 +187,6 @@ sub DESTROY
 }
 =cut
 
-sub save_insert_id
-{
-	my $this = shift;
-	$this->{save_insert_id} = TRUE;
-}
-
-sub get_insert_id
-{
-	my $this = shift;
-	return $this->{last_insert_id};
-}
+sub last_insert_id;
 
 return 1;
