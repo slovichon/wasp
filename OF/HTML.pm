@@ -275,7 +275,7 @@ sub input
 		} else {
 			$order = [keys %options];
 		}
-
+print "<!-- @$order -->";
 		my $opt_el;
 		foreach $key (@$order)
 		{
