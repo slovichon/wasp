@@ -64,8 +64,8 @@ sub new {
 	my $dsn = "dbi:$this->{driver}:$this->{database}";
 
 	if (exists $this->{host}) {
-		$this->throw("No remote RDBMS port specified") unless exists $this->{port};
-		$dsn .= ";hostname=$this->{host};port=$this->{port}";
+		$dsn .= ";hostname=$this->{host}";
+		$dsn .= ";port=$this->{port}" if $this->{port};
 	}
 
 	# Build DBI::connect argument list
@@ -141,12 +141,13 @@ sub fetch_row {
 	my $obj = shift;
 	my %row = ();
 
-	unless ($obj->{"rows"}--) {
-		$obj->{"sth"}->finish();
+	if ($obj->{rows} && $obj->{rows} == 0) {
+		$obj->{sth}->finish();
 		return;
 	}
+	$obj->{rows}--;
 
-	@row{@{$obj->{"sth"}->{"NAME"}}} = $obj->{"sth"}->fetchrow;
+	@row{@{ $obj->{sth}{NAME} }} = $obj->{sth}->fetchrow;
 
 	return %row;
 }
