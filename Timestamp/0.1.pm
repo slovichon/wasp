@@ -1,53 +1,70 @@
 package Timestamp;
 
-$VERSION = 1.2;
-
-use Carp;
 use POSIX;
 use strict;
-use vars qw/$AUTOLOAD/;
+
+our $VERSION = 0.1;
+
 use overload
 	'+'	=> \&add,
-	'-'	=> \&subtract,
-	'<'	=> \&less_than,
-	'>'	=> \&greater_than,
-	'<='	=> \&less_than_eq,
-	'>='	=> \&greater_than_eq,
-	'=='	=> \&eq;
+	'-'	=> \&sub,
+	'<'	=> \&lt,
+	'>'	=> \&gt,
+	'<='	=> \&le,
+	'>='	=> \&ge,
+	'=='	=> \&eq,
+	'<=>'	=> \&cmp;
 
+sub new
 {
-	my @_fields = qw/second minute hour day month year/;
+}
 
-	my @_days_per_mon = qw//;
+sub _fix
+{
+	my $this = shift;
 
-	my $_fix = sub
+	$this->{min}	+= int($this->{sec}/60);
+	$this->{sec}	%= 60;
+
+	$this->{hr}	+= int($this->{min}/60);
+	$this->{min}	%= 60;
+
+	$this->{day}	+= int($this->{hr}/24);
+	$this->{hr}	%= 24;
+
+	my ($days,$isleap);
+	my @dpm = (
+		[31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+		[31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+	);
+
+	do
 	{
-		my $obj = shift;
-		my $days;
+		$this->{yr}	+= int($this->{mon}/12);
+		$this->{mon}	%= 12;
 
-		$obj->min += int($obj->sec / 60);
-		$obj->sec %= 60;
+		$isleap = $this->{yr}
 
-		$obj->hr  += int($obj->min / 60);
-		$obj->min %= 60;
+		$days = $dpm[$isleap][$this->{mon}];
 
-		$obj->day += int($obj->hr / 24);
-		$obj->hr  %= 24;
+		$this->{mon}++ if $this->{day} > $days;
+		$this->{day}	-= $days;
+		
+	} while ($this->{day} > $days);
+}
 
-		do
-		{
-			$obj->year += int($obj->mon / 12);
-			$obj->mon  %= 12;
 
-			$days = $_days_per_mon[$obj->mon];
 
-			$obj->mon += int($obj->day / $days);
-			$obj->day %= $days;
 
-		} while ($obj->day > $days);
 
-		return;
-	};
+
+
+
+
+
+
+
+
 
 	my $_anaylze_args =
 	sub

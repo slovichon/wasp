@@ -4,7 +4,7 @@ use Exporter;
 use DBI;
 use strict;
 
-our $VERSION = "0.1";
+our $VERSION = 0.1;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = ();
 
