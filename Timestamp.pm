@@ -90,8 +90,8 @@ sub set_unix
 		min	=> $min,
 		hr	=> $hr,
 		day	=> $day,
-		mon	=> $mon,
-		yr	=> $yr,
+		mon	=> $mon + 1,
+		yr	=> $yr + 1900,
 	);
 }
 
@@ -99,7 +99,7 @@ sub set_now
 {
 	my $this = shift;
 #	$this->{tz}  = POSIX::strftime("%Z", localtime(time()));
-	return $this->set_unix(localtime(time()));
+	return $this->set_unix(time());
 }
 
 sub set
