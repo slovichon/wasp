@@ -583,7 +583,7 @@ sub div_start
 	{
 		$el .= qq( $k="$v");
 	}
-	return $el;
+	return "$el>";
 }
 
 sub div_end
