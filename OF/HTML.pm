@@ -9,6 +9,7 @@ use constant TRUE  => 1;
 use constant FALSE => 0;
 
 our @ISA = qw(OF);
+our $VERSION = 0.1;
 
 #form
 
