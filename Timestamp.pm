@@ -1,7 +1,7 @@
 package Timestamp;
 # $Id$
 
-use POSIX;
+use POSIX qw();
 #use Timestamp::Diff;
 use strict;
 
@@ -61,8 +61,42 @@ sub new
 		} elsif (@_ > 1) {
 			$this->set(@_);
 		}
+	} else {
+		# Unrecognized; set to current time
+		$this->set_now;
 	}
 
+	return $this;
+}
+
+sub set_string
+{
+	my ($this, $string) = @_;
+	return undef unless $string && $string =~ /^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/;
+	$this->set(
+		year	=> $1,
+		month	=> $2,
+		day	=> $3,
+		hour	=> $4,
+		min	=> $5,
+		sec	=> $6,
+	);
+	return $this;
+}
+
+sub set_unix
+{
+	my ($this, $ts) = @_;
+	return undef unless $ts && $ts =~ /^\d+$/;
+	my ($sec, $min, $hr, $day, $mon, $yr) = localtime($ts);
+	$this->set(
+		sec	=> $sec,
+		min	=> $min,
+		hr	=> $hr,
+		day	=> $day,
+		mon	=> $mon,
+		yr	=> $yr,
+	);
 	return $this;
 }
 
@@ -154,7 +188,9 @@ sub format
 {
 	my ($this, $fmt) = @_;
 
-	return strftime($fmt,
+	$fmt = "%F %r" unless $fmt;
+
+	return POSIX::strftime($fmt,
 		$this->{sec}, $this->{min}, $this->{hr},
 		$this->{day}, $this->{mon} - 1, $this->{yr} - 1900);
 }
@@ -179,39 +215,43 @@ sub set_now
 	$this->{mon} = $mon + 1;
 	$this->{yr}  = $yr + 1900;
 
-	return;
+	# Do previous timezone translation?
+	$this->{tz}  = POSIX::strftime("%Z", localtime(time()));
+
+	return $this;
 }
 
-*__PACKAGE__::set_current = \&__PACKAGE__::set_now;
+*set_current = \&set_now;
 
 # Accessors
-sub usec { @_ == 2 ? $_[0]->{usec}	= $_[1] : $_[0]->{usec}	}
-sub sec	 { @_ == 2 ? $_[0]->{sec}	= $_[1] : $_[0]->{sec}	}
-sub min	 { @_ == 2 ? $_[0]->{min}	= $_[1] : $_[0]->{min}	}
-sub hr	 { @_ == 2 ? $_[0]->{hr}	= $_[1] : $_[0]->{hr}	}
-sub day	 { @_ == 2 ? $_[0]->{day}	= $_[1] : $_[0]->{day}	}
-sub mon	 { @_ == 2 ? $_[0]->{mon}	= $_[1] : $_[0]->{mon}	}
-sub yr	 { @_ == 2 ? $_[0]->{yr}	= $_[1] : $_[0]->{yr}	}
-sub tz	 { @_ == 2 ? $_[0]->{tz}	= $_[1] : $_[0]->{tz}	}
+sub usec { @_ == 2 ? $_[0]->{usec} = $_[1] : $_[0]->{usec} }
+sub sec	 { @_ == 2 ? $_[0]->{sec}  = $_[1] : $_[0]->{sec}  }
+sub min	 { @_ == 2 ? $_[0]->{min}  = $_[1] : $_[0]->{min}  }
+sub hr	 { @_ == 2 ? $_[0]->{hr}   = $_[1] : $_[0]->{hr}   }
+sub day	 { @_ == 2 ? $_[0]->{day}  = $_[1] : $_[0]->{day}  }
+sub mon	 { @_ == 2 ? $_[0]->{mon}  = $_[1] : $_[0]->{mon}  }
+sub yr	 { @_ == 2 ? $_[0]->{yr}   = $_[1] : $_[0]->{yr}   }
+sub tz	 { @_ == 2 ? $_[0]->{tz}   = $_[1] : $_[0]->{tz}   }
 
-*__PACKAGE__::usecs		= \&__PACKAGE__::usec;
-*__PACKAGE__::ms		= \&__PACKAGE__::usec;
-*__PACKAGE__::millisec		= \&__PACKAGE__::usec;
-*__PACKAGE__::millisecs		= \&__PACKAGE__::usec;
-*__PACKAGE__::milliseconds 	= \&__PACKAGE__::usec;
-*__PACKAGE__::secs		= \&__PACKAGE__::sec;
-*__PACKAGE__::second		= \&__PACKAGE__::sec;
-*__PACKAGE__::mins		= \&__PACKAGE__::min;
-*__PACKAGE__::minute		= \&__PACKAGE__::min;
-*__PACKAGE__::hrs		= \&__PACKAGE__::hr;
-*__PACKAGE__::hours		= \&__PACKAGE__::hr;
-*__PACKAGE__::hour		= \&__PACKAGE__::hr;
-*__PACKAGE__::days		= \&__PACKAGE__::day;
-*__PACKAGE__::month		= \&__PACKAGE__::mon;
-*__PACKAGE__::yrs		= \&__PACKAGE__::yr;
-*__PACKAGE__::years		= \&__PACKAGE__::yr;
-*__PACKAGE__::year	 	= \&__PACKAGE__::yr;
-*__PACKAGE__::timezone	 	= \&__PACKAGE__::tz;
+# Aliases
+*usecs		= \&usec;
+*ms		= \&usec;
+*millisec	= \&usec;
+*millisecs	= \&usec;
+*milliseconds 	= \&usec;
+*secs		= \&sec;
+*second		= \&sec;
+*mins		= \&min;
+*minute		= \&min;
+*hrs		= \&hr;
+*hours		= \&hr;
+*hour		= \&hr;
+*days		= \&day;
+*month		= \&mon;
+*yrs		= \&yr;
+*years		= \&yr;
+*year	 	= \&yr;
+*timezone	= \&tz;
 
 sub get_string
 {
@@ -225,10 +265,10 @@ sub get_string
 sub get_unix
 {
 	my $this = shift;
-	
-	return mktime(
-		$this->sec, $this->min, $this->hr,
-		$this->day, $this->mon, $this->yr);
+
+	return POSIX::mktime(
+		$this->sec, $this->min, $this->hr-1,
+		$this->day, $this->mon-1, $this->yr-1900);
 }
 
 =comment

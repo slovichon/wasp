@@ -8,9 +8,17 @@ use CGI;
 use strict;
 
 my $w = WASP->new;
-my $of = OF::HTML->new($w);
+my $of = OF::HTML->new($w, textarea=>{rows=>6});
 
-print $of->input(type=>"select", options=>{foo=>"bar"}, multiple=>"multiple", size=>5);
+print $of->email('foo@bar.net');
+
+__END__
+
+print $of->input(type=>"select", options=>{
+	1=>1, 2=>2, 3=>3, 4=>4, 5=>5, 6=>6,
+	7=>7, 8=>8, 9=>9, 10=>10, 11=>11, 12=>12
+	}, multiple=>"multiple", size=>5, order=>[
+	1..12], value=>1);
 
 __END__
 
