@@ -549,6 +549,30 @@ sub strong
 	return $el->build();
 }
 
+sub span
+{
+	my ($this, $r_prefs, @data) = @_;
+
+	unless (ref $r_prefs eq "HASH")
+	{
+		# Oops, first arg was actually more data
+		unshift @data, $r_prefs;
+		$r_prefs = {};
+	}
+
+	$this->_getprefs('span', $r_prefs);
+
+	my $el = XML::Element->new('span', join '', @data);
+
+	my ($key, $val);
+	while (($key, $val) = each %$r_prefs)
+	{
+		$el->set_attribute($key, $val);
+	}
+
+	return $el->build();
+}
+
 sub div
 {
 	my ($this, $r_prefs, @data) = @_;

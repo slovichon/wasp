@@ -126,6 +126,7 @@ sub pre;
 sub code;
 sub strong;
 sub div;
+sub span;
 sub img;
 sub email;
 
