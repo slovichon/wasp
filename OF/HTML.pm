@@ -267,7 +267,7 @@ sub input
 		my $sel_el = XML::Element->new('select');
 
 		my $order;
-		
+
 		if ($prefs{order} && ref $prefs{order} eq "ARRAY")
 		{
 			$order = $prefs{order};
@@ -275,7 +275,7 @@ sub input
 		} else {
 			$order = [keys %options];
 		}
-print "<!-- @$order -->";
+
 		my $opt_el;
 		foreach $key (@$order)
 		{
