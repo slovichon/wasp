@@ -5,6 +5,9 @@ use OF;
 use XML::Element;
 use strict;
 
+use constant TRUE  => 1;
+use constant FALSE => 0;
+
 our @ISA = qw(OF);
 
 #form
@@ -235,6 +238,16 @@ sub fieldset
 	return $el->build();
 }
 
+sub _in_array
+{
+	my ($needle, $hay) = @_;
+	foreach (@$hay)
+	{
+		return TRUE if $needle eq $_;
+	}
+	return FALSE;
+}
+
 sub input
 {
 	my ($this, %prefs) = @_;
@@ -257,10 +270,14 @@ sub input
 			$opt_el = XML::Element->new('option', $val);
 			$opt_el->set_attribute('value', $key);
 
-			if (exists $prefs{value} && $prefs{value} eq $key)
+			if (exists $prefs{value})
 			{
-				$opt_el->set_attribute('selected', 'selected');
-				delete $prefs{value};
+				if (ref $prefs{value} eq "ARRAY" && _in_array($key, $prefs{value})
+					|| $prefs{value} eq $key)
+				{
+					$opt_el->set_attribute('selected', 'selected');
+					delete $prefs{value};
+				}
 			}
 
 			$sel_el->append_value($opt_el->build());
