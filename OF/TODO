@@ -3,3 +3,5 @@ $Id$
 in OF::input() (select), options takes a hash. will loss of ordering matter?
 rename OF::Text to OF::Term?
 OF::HTML - encode @ characters (&#23;)
+
+in of_email(), put intermediate e-mail addresses in comments of divided emails components
