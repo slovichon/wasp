@@ -318,11 +318,6 @@ sub input
 #			$el->set_value(escapeHTML($prefs{value}));
 			$el->set_value($prefs{value});
 			delete $prefs{value};
-		} else {
-			# Most browsers think <textarea /> doesn't
-			# have an end tag, so give it a worthless
-			# value so the tag is built accordingly.
-			$el->set_value(" ");
 		}
 
 		while (($key, $val) = each %prefs)
