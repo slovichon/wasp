@@ -7,6 +7,13 @@ use CGI;
 
 use strict;
 
+my $w = WASP->new;
+my $of = OF::HTML->new($w);
+
+print $of->input(type=>"select", options=>{foo=>"bar"}, multiple=>"multiple", size=>5);
+
+__END__
+
 my $w = WASP->new();
 my $of = OF::HTML->new($w,{
 				form=>{

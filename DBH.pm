@@ -189,7 +189,7 @@ sub DESTROY
 sub last_insert_id
 {
 	my $this = shift;
-	return $this->{dbh}->func("_InsertID");
+	return $this->{sth}->{insertid};
 }
 
 return 1;

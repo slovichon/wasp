@@ -288,7 +288,7 @@ sub input
 			$sel_el->set_attribute($key, $val);
 		}
 
-		return $sel_el->build;
+		return $sel_el->build();
 
 	} elsif ($prefs{type} eq "textarea") {
 

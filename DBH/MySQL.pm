@@ -18,10 +18,4 @@ sub new
 	my $this = $class->SUPER::new(%prefs);
 }
 
-sub last_insert_id
-{
-	my $this = shift;
-	return $this->{dbh}->func("_InsertID");
-}
-
 return 1;
