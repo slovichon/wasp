@@ -341,21 +341,13 @@ sub input
 			$prefs{id} = $this->_gen_rand_id();
 		}
 
-=comment
 		if (exists $prefs{checked} && $prefs{checked})
 		{
 			$prefs{checked} = "checked";
 		} else {
-			delete $prefs{checked}
+			delete $prefs{checked};
 		}
-=cut
-=comment
-		if (exists $prefs{value})
-		{
-			$el->set_value($prefs{value});
-			delete $prefs{value};
-		}
-=cut
+
 		while (($key, $val) = each %prefs)
 		{
 			$el->set_attribute($key, $val);
