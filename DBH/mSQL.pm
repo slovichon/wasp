@@ -13,7 +13,7 @@ sub new {
 	my ($class, %prefs) = @_;
 	$prefs{driver} = "mSQL";
 	# Set default mSQL port if unspecified
-	$prefs{port} = 1114 if !exists $prefs{port} && exists $prefs{host};
+	#$prefs{port} = 1114 if !exists $prefs{port} && exists $prefs{host};
 	my $this = $class->SUPER::new(%prefs);
 }
 
