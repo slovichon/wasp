@@ -548,6 +548,7 @@ sub email
 {
 	my ($this, $email) = @_;
 
+	$email =~ s/[a-zA-Z0-9]/"&#".ord($&).";"/eg;
 	$email =~ s/@/<!-- \nbleh\n -->(at)<!-- \nbleh\n -->/;
 	$email =~ s/\./<!-- \nbleh\n -->[dot]<!-- \nbleh\n -->/g;
 
