@@ -2,9 +2,11 @@
 # $Id$
 
 use strict;
+use WASP;
 use DBH::MySQL qw(:all);
 
-my $dbh = DBH::MySQL->new(host=>"12.226.98.118", database=>"test");
+my $w = WASP->new();
+my $dbh = DBH::MySQL->new(wasp=>$w, host=>"12.226.98.118", database=>"test");
 
 $dbh->query("CREATE TABLE foo (a INT)", DB_NULL);
 $dbh->query("INSERT INTO foo (5)", DB_NULL);
