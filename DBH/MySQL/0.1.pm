@@ -7,7 +7,7 @@ use strict;
 our $VERSION = 0.1;
 our @ISA = qw(DBH);
 our @EXPORT_OK = @DBH::EXPORT_OK;
-our @EXPORT_TAGS = @DBH::EXPORT_TAGS;
+our %EXPORT_TAGS = %DBH::EXPORT_TAGS;
 
 sub last_insert_id
 {
