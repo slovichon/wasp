@@ -5,53 +5,121 @@ use WASP;
 use OF::HTML;
 use CGI;
 
+use common;
+
 use strict;
 
 my $w = WASP->new;
-my $of = OF::HTML->new($w, textarea=>{rows=>6});
+my $of = OF::HTML->new($w, {
+	textarea=>{rows=>6, cols=>40},
+	form=>{
+		method=>"post",
+		enctype=>"application/x-www-form-urlencoded",
+		action=>CGI::url(-absolute=>1)
+	},
+	header=>{size=>3}
+});
 
-print $of->email('foo@bar.net');
+my ($a, $b, $c, $d, $e);
 
-__END__
+test "email";
+$a = $of->email('foo@bar.net');
+print "foo\@bar.net yields: ", esc($a), "\n";
+_ $a eq qq{<script type="text/javascript">
+<!--
+document.write('<a href="mailto:');document.write('&#102;&#111;&#111;');document.write('&#64;');document.write(['&#98;&#97;&#114;', '&#110;&#101;&#116;'].join('&#46;'));document.write('">');document.write('&#102;&#111;&#111;');document.write('&#64;');document.write(['&#98;&#97;&#114;', '&#110;&#101;&#116;'].join('&#46;'));document.write('</a>');// --></script><noscript>&#102;&#111;&#111;<!-- 
+bleh
+ -->(at)<!-- 
+bleh
+ -->&#98;&#97;&#114;<!-- 
+bleh
+ -->[dot]<!-- 
+bleh
+ -->&#110;&#101;&#116;</noscript>};
 
-print $of->input(type=>"select", options=>{
+test "select input";
+$a = $of->input(type=>"select", options=>{
 	1=>1, 2=>2, 3=>3, 4=>4, 5=>5, 6=>6,
 	7=>7, 8=>8, 9=>9, 10=>10, 11=>11, 12=>12
 	}, multiple=>"multiple", size=>5, order=>[
 	1..12], value=>1);
+print $a, "\n";
+_ $a eq qq{<select multiple="multiple" size="5"><option selected="selected" value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>};
+
+
+test "header, preference arguing";
+$a = $of->header({class=>"foo"}, "hi");
+print $a, "\n";
+_ $a eq qq{<h3 class="foo">hi</h3>};
+
+test "link, complex";
+$a = $of->link(href=>"this is the href", value=>"this is the val");
+print $a, "\n";
+_ $a eq qq{<a href="this is the href">this is the val</a>};
+
+
+test "p, simple";
+$a = $of->p("hello there");
+print $a, "\n";
+_ $a eq "<p>hello there</p>";
+
+test "p, complex";
+$a = $of->p({class=>"ptst"}, "another p test");
+print $a, "\n";
+_ $a eq qq{<p class="ptst">another p test</p>};
+
+
+test "link, simple";
+$a = $of->link("VAL", "HREF");
+print $a, "\n";
+_ $a eq qq{<a href="HREF">VAL</a>};
+
+test "hr";
+$a = $of->hr;
+print $a, "\n";
+_ $a eq "<hr />";
+
+test "br";
+$a = $of->br;
+print $a, "\n";
+_ $a eq "<br />";
+
+test "header, complex";
+$a = $of->header({size=>2}, "hi");
+print $a, "\n";
+_ $a eq qq{<h2>hi</h2>};
+
+test "emph, simple";
+$a = $of->emph("emphasized");
+print $a, "\n";
+_ $a eq "<em>emphasized</em>";
+
+test "pre, simple";
+$a = $of->pre("preformatted");
+print $a, "\n";
+_ $a eq "<pre>preformatted</pre>";
+
+test "code, simple";
+$a = $of->code("super CODE");
+print $a, "\n";
+_ $a eq "<code>super CODE</code>";
+
+test "strong, simple";
+$a = $of->strong("strength");
+print $a, "\n";
+_ $a eq "<strong>strength</strong>";
+
+test "div, complex";
+$a = $of->div({align=>"center"}, "page division");
+print $a, "\n";
+_ $a eq qq{<div align="center">page division</div>};
+
+test "img";
+$a = $of->img(src=>"hi.png", alt=>"hi");
+print $a, "\n";
+_ $a eq qq{<img alt="hi" src="hi.png" />};
 
 __END__
-
-my $w = WASP->new();
-my $of = OF::HTML->new($w,{
-				form=>{
-					method=>"post",
-					enctype=>"application/x-www-form-urlencoded",
-					action=>CGI::url(-absolute=>1)
-				},
-				header=>{size=>3}
-			});
-
-print $of->header({class=>"foo"}, "hi"),"\n",
-	$of->link(href=>"this is the href", value=>"this is the val"), "\n";
-
-__END__
-
-print	"Small tests:\n",
-	$of->p("hello there"), "\n",
-	$of->p({class=>"ptst"}, "another p test"), "\n",
-	$of->link(href=>"this is the href", value=>"this is the val"), "\n",
-	$of->hr, "\n",
-	$of->br, "\n",
-	$of->header({size=>2}, "hi"), "\n",
-	$of->emph("emphasized"), "\n",
-	$of->pre("preformatted"), "\n",
-	$of->code("super CODE"), "\n",
-	$of->strong("strength"), "\n",
-	$of->div({align=>"center"}, "page division"), "\n",
-	$of->img(src=>"hi.png", alt=>"hi"),
-	$of->email("email\@test.com"),
-	"\n-----------------------\n";
 
 print "\nForm test:\n";
 print $of->form
