@@ -17,7 +17,6 @@ sub add
 {
 	no strict 'refs';
 	my ($this, $name) = @_;
-print *$name, "\n";
 	
 	*{"$this->{pkg}::$name"} = sub () {
 		return (1<<$this->{start}++);
