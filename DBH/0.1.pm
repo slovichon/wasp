@@ -40,7 +40,7 @@ sub new
 	my ($class, %prefs) = @_;
 
 	my $this = bless \%prefs, ref($class) || $class;
-	
+
 	if (exists $this->{user})
 	{
 		$this->{username} = $this->{pass};
@@ -52,41 +52,49 @@ sub new
 		$this->{password} = $this->{pass};
 		delete $this->{pass};
 	}
-	
-	$this->throw("No DBI driver specified")	unless exists $this->{driver};
-	$this->throw("No database specified")	unless exists $this->{database};
 
+	$this->throw("No DBI driver specified")		unless exists $this->{driver};
+	$this->throw("No database specified")		unless exists $this->{database};
+	$this->throw("No WASP instance specified")	unless exists $this->{wasp};
+
+	# Build DSN
 	my $dsn = "dbi:$this->{driver}:$this->{database}";
 
 	$dsn .= "\@$this->{host}" if exists $this->{host};
 	$dsn .=  ":$this->{port}" if exists $this->{port};
-	
-	$this->throw("No username specified")	unless exists $this->{username};
-	$this->throw("No password specified")	unless exists $this->{password};
 
-	$this->{dbh} = DBI->connect($dsn, $this->{username}, $this->{password}) or
-		$this->throw("Cannot connect to database");
+	# Build DBI::connect argument list
+	my @args = ($dsn);
+	if (exists $this->{username})
+	{
+		push @args, $this->{username};
+		push @args, $this->{password} if exists $this->{password};
+	}
+
+	$this->{dbh} = DBI->connect(@args) or $this->throw("Cannot connect to database");
 
 	return $this;
 }
 
 sub throw
 {
-	my ($this, $err) = shift;
+	my ($this, $err) = @_;
 
-	$err .=	"; DBI error: $DBI::errstr" .
+	$err .=	"; DBI error: " . ($this->{dbh} && $DBI::err ? $DBI::errstr : "(none)") .
 		"; Username: " . (exists $this->{username} && defined $this->{username} ? $this->{username} : "NONE") .
 		"; Using a password? " . (exists $this->{password} ? "yes" : "no") .
 		"; Host: " .     (exists $this->{host}     && defined $this->{host}     ? $this->{host}     : "NONE") .
-		"; Port: " .     (exists $this->{port}     && defined $this->{port}     ? $this->{port}     : "NONE") .
-		"; Driver: " .   (exists $this->{driver}   && defined $this->{driver}   ? $this->{driver}   : "NONE") . 
+		"; Port: " .     (exists $this->{port}     && defined $this->{port}     ? $this->{port}     : "(default)") .
+		"; Driver: " .   (exists $this->{driver}   && defined $this->{driver}   ? $this->{driver}   : "NONE") .
 		"; Database: " . (exists $this->{database} && defined $this->{database} ? $this->{database} : "NONE") .
-		"; Available drivers: @{[ DBI->available_drivers(TRUE) ]}";
+		"; Available drivers: @{[ DBI->available_drivers(TRUE) ]}\n";
 
 	# Infinite loop?
 #	$this->{dbh}->disconnect();
 
-	$this->{wasp}->throw($err);
+	# We may not have been given a WASP object
+	$this->{wasp}->throw($err) if $this->{wasp};
+	die($err);
 }
 
 sub query
@@ -149,7 +157,7 @@ sub prepare_str
 		$str =~ s/['"\\]/\\$0/g;
 
 	} elsif ($type == DBH::SQL_WILD) {
-		
+
 		$str =~ s/['"\\_%]/\\$0/g;
 
 	} elsif ($type == DBH::SQL_REGEX) {
