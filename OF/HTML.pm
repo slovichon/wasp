@@ -470,7 +470,10 @@ sub pre
 
 	$this->_getprefs('pre', $r_prefs);
 
-	my $el = XML::Element->new('pre', join '', @data);
+	# Strip neighboring whitespace
+	my $value = join '', @data;
+	$value =~ s/^\s+|\s+$//g;
+	my $el = XML::Element->new('pre', $value);
 
 	my ($key, $val);
 	while (($key, $val) = each %$r_prefs)
