@@ -7,17 +7,17 @@ use strict;
 
 our $VERSION = 0.1;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = ();
 
+our @EXPORT_OK = ();
 push @EXPORT_OK, qw(DB_COL DB_ROW DB_ROWS DB_NULL);	# Result types
 push @EXPORT_OK, qw(SQL_REG SQL_WILD SQL_REGEX);	# Escape types
-our %EXPORT_TAGS =
-{
+
+our %EXPORT_TAGS = (
 	all	=> [qw(DB_COL DB_ROW DB_ROWS DB_NULL
 			SQL_REG SQL_WILD SQL_REGEX)],
 	result	=> [qw(DB_COL DB_ROW DB_ROWS DB_NULL)],
 	escape	=> [qw(SQL_REG SQL_WILD SQL_REGEX)],
-};
+);
 
 use strict;
 
@@ -86,7 +86,7 @@ sub throw
 	# Infinite loop?
 #	$this->{dbh}->disconnect();
 
-	WASP::throw($err);
+	$this->{wasp}->throw($err);
 }
 
 sub query
