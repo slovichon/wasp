@@ -4,6 +4,7 @@ package Timestamp;
 use POSIX qw();
 #use Timestamp::Diff;
 use strict;
+use warnings;
 
 our $VERSION = 0.1;
 
@@ -38,14 +39,9 @@ sub new
 			tz	=> undef,
 		}, ref($class) || $class;
 
-	# Clone from previous object
-	if (ref($class))
+	# Clone from previous object or ref
+	if (ref($class) eq "HASH" or ref($class) eq __PACKAGE__)
 	{
-		#my ($k, $v);
-		#while (($k, $v) = each(%$class))
-		#{
-		#	$this->{$k} = $v;
-		#}
 		%$this = %$class;
 	} elsif (defined($_[0])) {
 		# YYYY MM DD HH MM SS (14)
@@ -57,7 +53,7 @@ sub new
 		} elsif ($_[0] =~ /^\d+$/) {
 			$this->set_unix($_[0]);
 
-		# Verbose form
+		# Verbose form (named keys)
 		} elsif (@_ > 1) {
 			$this->set(@_);
 		}
@@ -72,8 +68,9 @@ sub new
 sub set_string
 {
 	my ($this, $string) = @_;
-	return undef unless $string && $string =~ /^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/;
-	$this->set(
+	return undef unless $string &&
+		$string =~ /^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)$/;
+	return $this->set(
 		year	=> $1,
 		month	=> $2,
 		day	=> $3,
@@ -81,7 +78,6 @@ sub set_string
 		min	=> $5,
 		sec	=> $6,
 	);
-	return $this;
 }
 
 sub set_unix
@@ -89,7 +85,7 @@ sub set_unix
 	my ($this, $ts) = @_;
 	return undef unless $ts && $ts =~ /^\d+$/;
 	my ($sec, $min, $hr, $day, $mon, $yr) = localtime($ts);
-	$this->set(
+	return $this->set(
 		sec	=> $sec,
 		min	=> $min,
 		hr	=> $hr,
@@ -97,13 +93,15 @@ sub set_unix
 		mon	=> $mon,
 		yr	=> $yr,
 	);
-	return $this;
 }
 
-=comment
-$ts = Timestamp->new();
-$ts->set(month=>4);
-=cut
+sub set_now
+{
+	my $this = shift;
+#	$this->{tz}  = POSIX::strftime("%Z", localtime(time()));
+	return $this->set_unix(localtime(time()));
+}
+
 sub set
 {
 	my ($this, %parts) = @_;
@@ -113,11 +111,13 @@ sub set
 		millisec	=> "usec",	millisecs	=> "usec",
 		milliseconds	=> "usec",
 		secs		=> "sec",	second		=> "sec",
+		seconds		=> "sec",
 		mins		=> "min",	minute		=> "min",
+		minutes		=> "min",
 		hrs		=> "hr",	hours		=> "hr",
 		hour		=> "hr",
 		days		=> "day",
-		month		=> "mon",
+		month		=> "mon",	months		=> "mon",
 		yrs		=> "yr",	years		=> "yr",
 		year		=> "yr",
 		timezone	=> "tz",
@@ -125,10 +125,8 @@ sub set
 
 	# Expand aliases
 	my ($k, $v);
-	while (($k, $v) = each(%aliases))
-	{
-		if (exists $parts{$k})
-		{
+	while (($k, $v) = each(%aliases)) {
+		if (exists $parts{$k}) {
 			$parts{$v} = $parts{$k};
 			delete $parts{$k};
 		}
@@ -136,54 +134,92 @@ sub set
 
 	#$this->{$_} = $parts{$_} foreach qw(usec sec min hr mon day yr tz);
 	#%$this = %parts;
-	$this->usec($parts{usec}) if exists $parts{usec};
-	$this->sec ($parts{sec})  if exists $parts{sec};
-	$this->min ($parts{min})  if exists $parts{min};
-	$this->hr  ($parts{hr})	  if exists $parts{hr};
-	$this->day ($parts{day})  if exists $parts{day};
-	$this->mon ($parts{mon})  if exists $parts{mon};
-	$this->yr  ($parts{yr})	  if exists $parts{yr};
-	$this->tz  ($parts{tz})	  if exists $parts{tz};
+	$this->{usec} = $parts{usec}	if exists $parts{usec};
+	$this->{sec}  = $parts{sec}	if exists $parts{sec};
+	$this->{min}  = $parts{min}	if exists $parts{min};
+	$this->{hr}   = $parts{hr}	if exists $parts{hr};
+	$this->{day}  = $parts{day}	if exists $parts{day};
+	$this->{mon}  = $parts{mon}	if exists $parts{mon};
+	$this->{yr}   = $parts{yr}	if exists $parts{yr};
+	# Do previous timezone translation?
+	$this->{tz}   = $parts{tz}	if exists $parts{tz};
 
-	return;
+	$this->_fix();
+
+	return $this;
 }
-=comment
+
 sub _fix
 {
 	my $this = shift;
+	my $days;
 
-	$this->{min}	+= int($this->{sec}/60);
-	$this->{sec}	%= 60;
+	$this->{min} += int($this->{sec}/60);
+	$this->{min}-- if $this->{sec} < 0;
+	$this->{sec} %= 60;
 
-	$this->{hr}	+= int($this->{min}/60);
-	$this->{min}	%= 60;
+	$this->{hr} += int($this->{min}/60);
+	$this->{hr}-- if $this->{min} < 0;
+	$this->{min} %= 60;
 
-	$this->{day}	+= int($this->{hr}/24);
-	$this->{hr}	%= 24;
+	$this->{day} += int($this->{hr}/24);
+	$this->{day}-- if $this->{hr} < 0;
+	$this->{hr} %= 24;
 
-	my ($days,$isleap);
-	my @dpm = (
-		[31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-		[31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-	);
+	$this->{yr} += int($this->{mon}/12);
+	$this->{yr}-- if $this->{mon} < 0;
+	$this->{mon} %= 12;
 
-	do
-	{
-		$this->{yr}	+= int($this->{mon}/12);
-		$this->{mon}	%= 12;
+	if ($this->{day} < 0) {
+=comment
+		$days = $this->days_in_month(($this->{mon}-1)%12, $this->{yr});
 
-		$isleap = $this->{yr};
-
-		$days = $dpm[$isleap][$this->{mon}];
-
-		$this->{mon}++ if $this->{day} > $days;
-		$this->{day}	-= $days;
-
-	} while ($this->{day} > $days);
-
-	return;
-}
+		while ($this->{day} < 0) {
+			$this->{mon}-- if $this->{day} > $days;
+			$this->{day} += $days;
+	
+			$this->{yr} += int($this->{mon}/12);
+			$this->{yr}-- if $this->{mon} < 0;
+			$this->{mon} %= 12;
+	
+			$days = $this->days_in_month($this->{mon}, $this->{yr});
+		}
 =cut
+	} else {
+		$days = $this->days_in_month($this->{mon}, $this->{yr});
+
+		while ($this->{day} > $days) {
+			$this->{mon}++ if $this->{day} > $days;
+			$this->{day} -= $days;
+	
+			$this->{yr} += int($this->{mon}/12);
+			$this->{yr}-- if $this->{mon} < 0;
+			$this->{mon} %= 12;
+	
+			$days = $this->days_in_month($this->{mon}, $this->{yr});
+		}
+	}
+
+	$this->{yr} += int($this->{mon}/12);
+	$this->{yr}-- if $this->{mon} < 0;
+	$this->{mon} %= 12;
+}
+
+sub days_in_month {
+	my ($this, $m, $y) = @_;
+	my ($days, $isleap);
+	$isleap = $this->is_leap_year($y) ? 1 : 0;
+	return (
+		[0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+		[0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+	)[$isleap]->[$m];
+}
+
+sub is_leap_year {
+	my ($this, $y) = @_;
+	return (($y % 100 != 0) && ($y % 4 == 0)) || ($y % 400 == 0);
+}
+
 sub format
 {
 	my ($this, $fmt) = @_;
@@ -191,49 +227,101 @@ sub format
 	$fmt = "%F %r" unless $fmt;
 
 	return POSIX::strftime($fmt,
-		$this->{sec}, $this->{min}, $this->{hr},
-		$this->{day}, $this->{mon} - 1, $this->{yr} - 1900);
+		$this->sec, $this->min, $this->hr,
+		$this->day, $this->mon-1, $this->yr-1900);
 }
-
-sub set_now
-{
-	my $this = shift;
-	my ($sec, $min, $hr, $day, $mon, $yr) = localtime(time());
-
-	# We should be able to trust localtime()...
-#	$this->sec($sec);
-#	$this->min($min);
-#	$this->hr($hr);
-#	$this->day($day);
-#	$this->mon($mon);
-#	$this->yr($yr);
-
-	$this->{sec} = $sec;
-	$this->{min} = $min;
-	$this->{hr}  = $hr;
-	$this->{day} = $day;
-	$this->{mon} = $mon + 1;
-	$this->{yr}  = $yr + 1900;
-
-	# Do previous timezone translation?
-	$this->{tz}  = POSIX::strftime("%Z", localtime(time()));
-
-	return $this;
-}
-
-*set_current = \&set_now;
 
 # Accessors
-sub usec { @_ == 2 ? $_[0]->{usec} = $_[1] : $_[0]->{usec} }
-sub sec	 { @_ == 2 ? $_[0]->{sec}  = $_[1] : $_[0]->{sec}  }
-sub min	 { @_ == 2 ? $_[0]->{min}  = $_[1] : $_[0]->{min}  }
-sub hr	 { @_ == 2 ? $_[0]->{hr}   = $_[1] : $_[0]->{hr}   }
-sub day	 { @_ == 2 ? $_[0]->{day}  = $_[1] : $_[0]->{day}  }
-sub mon	 { @_ == 2 ? $_[0]->{mon}  = $_[1] : $_[0]->{mon}  }
-sub yr	 { @_ == 2 ? $_[0]->{yr}   = $_[1] : $_[0]->{yr}   }
-sub tz	 { @_ == 2 ? $_[0]->{tz}   = $_[1] : $_[0]->{tz}   }
+sub usec {
+	my ($this, $usec) = @_;
+	if (@_ == 2) {
+		$usec = 0 unless $usec && $usec =~ /^\d+$/;
+		$this->{usec} = $usec;
+		$this->_fix;
+	}
+	return $this->{usec};
+}
+
+sub sec	{
+	my ($this, $sec) = @_;
+	if (@_ == 2) {
+		$sec = 0 unless $sec && $sec =~ /^\d+$/;
+		$this->{sec} = $sec;
+		$this->_fix;
+	}
+	return $this->{sec};
+}
+
+sub min {
+	my ($this, $min) = @_;
+	if (@_ == 2) {
+		$min = 0 unless $min && $min =~ /^\d+$/;
+		$this->{min} = $min;
+		$this->_fix;
+	}
+	return $this->{min};
+}
+
+sub hr {
+	my ($this, $hr) = @_;
+	if (@_ == 2) {
+		$hr = 0 unless $hr && $hr =~ /^\d+$/;
+		$this->{hr} = $hr;
+		$this->_fix;
+	}
+	return $this->{hr};
+}
+
+sub day	{
+	my ($this, $day) = @_;
+	if (@_ == 2) {
+		$day = 0 unless $day && $day =~ /^\d+$/;
+		$this->{day} = $day;
+		$this->_fix;
+	}
+	return $this->{day};
+}
+
+sub mon {
+	my ($this, $mon) = @_;
+	if (@_ == 2) {
+		$mon = 0 unless $mon && $mon =~ /^\d+$/;
+		$this->{mon} = $mon;
+		$this->_fix;
+	}
+	return $this->{mon};
+}
+
+sub yr {
+	my ($this, $yr) = @_;
+	if (@_ == 2) {
+		$yr = 0 unless $yr && $yr =~ /^\d+$/;
+		$this->{yr} = $yr;
+		$this->_fix;
+	}
+	return $this->{yr};
+}
+
+sub tz {
+	my ($this, $tz) = @_;
+	if (@_ == 2) {
+		$this->{tz} = $tz if $this->valid_timezone($tz);
+		# We should probably call fix() and have it
+		# do timezone adjustment.
+#		$this->_fix;
+	}
+	return $this->{tz};
+}
 
 # Aliases
+sub usecs; 	sub ms;			sub millisec;
+sub millisecs; 	sub milliseconds;	sub secs;
+sub second;	sub seconds;		sub mins;
+sub minute;	sub minutes;		sub hrs;
+sub hour;	sub hours;		sub days;
+sub month;	sub months;		sub yrs;
+sub years;	sub year;		sub timezone;
+
 *usecs		= \&usec;
 *ms		= \&usec;
 *millisec	= \&usec;
@@ -241,17 +329,24 @@ sub tz	 { @_ == 2 ? $_[0]->{tz}   = $_[1] : $_[0]->{tz}   }
 *milliseconds 	= \&usec;
 *secs		= \&sec;
 *second		= \&sec;
+*seconds	= \&sec;
 *mins		= \&min;
 *minute		= \&min;
+*minutes	= \&min;
 *hrs		= \&hr;
-*hours		= \&hr;
 *hour		= \&hr;
+*hours		= \&hr;
 *days		= \&day;
 *month		= \&mon;
+*months		= \&mon;
 *yrs		= \&yr;
 *years		= \&yr;
 *year	 	= \&yr;
 *timezone	= \&tz;
+
+sub set_current;
+
+*set_current 	= \&set_now;
 
 sub get_string
 {
