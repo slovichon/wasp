@@ -123,8 +123,8 @@ sub emph;
 sub pre;
 sub code;
 sub strong;
-sub start_div;
-sub end_div;
+sub div_start;
+sub div_end;
 
 sub div
 {
@@ -135,9 +135,9 @@ sub div
 		unshift @data, $r_prefs;
 		$r_prefs = {};
 	}
-	return 	$this->start_div(%$r_prefs) .
+	return 	$this->div_start(%$r_prefs) .
 		join('', @data) .
-		$this->end_div(%$r_prefs);
+		$this->div_end(%$r_prefs);
 }
 
 sub span;

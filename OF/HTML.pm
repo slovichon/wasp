@@ -573,7 +573,7 @@ sub span
 	return $el->build();
 }
 
-sub start_div
+sub div_start
 {
 	my ($this, %prefs) = @_;
 	$this->_getprefs('div', \%prefs);
@@ -586,7 +586,7 @@ sub start_div
 	return $el;
 }
 
-sub end_div
+sub div_end
 {
 	my ($this, %prefs) = @_;
 	return "</div>";
