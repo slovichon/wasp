@@ -110,25 +110,25 @@ sub query
 	$this->{sth} = $this->{dbh}->prepare($sql)	or $this->throw("Cannot prepare query; SQL: $sql");
 	$this->{sth}->execute()				or $this->throw("Cannot execute query; SQL: $sql");
 
-	if ($type == DBH::DB_COL)
+	if ($type == DB_COL)
 	{
 		my $field = ($this->{sth}->fetchrow)[0];
 		$this->{sth}->finish();
 		return $field;
 
-	} elsif ($type == DBH::DB_ROW) {
+	} elsif ($type == DB_ROW) {
 
 		my %row = ();
 		@row{@{ $this->{sth}->{NAME} }} = $this->{sth}->fetchrow;
 		$this->{sth}->finish();
 		return %row;
 
-	} elsif ($type == DBH::DB_ROWS) {
+	} elsif ($type == DB_ROWS) {
 
 		$this->{rows} = $DBI::rows;
 		return $DBI::rows;
 
-	} elsif ($type == DBH::DB_NULL) {
+	} elsif ($type == DB_NULL) {
 
 		my $rows = $DBI::rows;
 		$this->{last_insert_id} = $this->{sth}->{insertid} if $this->{save_insert_id};
@@ -159,17 +159,17 @@ sub prepare_str
 {
 	my ($this, $str, $type) = @_;
 
-	if ($type == DBH::SQL_REG)
+	if ($type == SQL_REG)
 	{
-		$str =~ s/['"\\]/\\$0/g;
+		$str =~ s/['"\\]/\\$&/g;
 
-	} elsif ($type == DBH::SQL_WILD) {
+	} elsif ($type == SQL_WILD) {
 
-		$str =~ s/['"\\_%]/\\$0/g;
+		$str =~ s/['"\\_%]/\\$&/g;
 
-	} elsif ($type == DBH::SQL_REGEX) {
+	} elsif ($type == SQL_REGEX) {
 
-		#$str =~ s/['"\\^\$()\[\]{}+*?.]/\\$0/g;
+		#$str =~ s/['"\\^\$()\[\]{+*?.]/\\$0/g;
 		$str = quotemeta($str);
 	} else {
 		$this->throw("Invalid escape type; type: $type");
