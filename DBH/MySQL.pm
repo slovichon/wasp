@@ -9,17 +9,15 @@ our @ISA = qw(DBH);
 our @EXPORT_OK = @DBH::EXPORT_OK;
 our %EXPORT_TAGS = %DBH::EXPORT_TAGS;
 
-sub new
-{
+sub new {
 	my ($class, %prefs) = @_;
 	$prefs{driver} = "mysql";
-	# Set default port if unspecified
+	# Set default MySQL port if unspecified
 	$prefs{port} = 3306 if !exists $prefs{port} && exists $prefs{host};
 	my $this = $class->SUPER::new(%prefs);
 }
 
-sub last_insert_id
-{
+sub last_insert_id {
 	my ($this) = @_;
 	return $this->{dbh}->{mysql_insertid};
 }

@@ -41,20 +41,17 @@ use constant SQL_REGEX	=> 3;
 use constant TRUE	=> 1;
 use constant FALSE	=> "";
 
-sub new
-{
+sub new {
 	my ($class, %prefs) = @_;
 
 	my $this = bless \%prefs, ref($class) || $class;
 
-	if (exists $this->{user})
-	{
+	if (exists $this->{user}) {
 		$this->{username} = $this->{pass};
 		delete $this->{pass};
 	}
 
-	if (exists $this->{pass})
-	{
+	if (exists $this->{pass}) {
 		$this->{password} = $this->{pass};
 		delete $this->{pass};
 	}
@@ -66,27 +63,27 @@ sub new
 	# Build DSN
 	my $dsn = "dbi:$this->{driver}:$this->{database}";
 
-	if (exists $this->{host})
-	{
+	if (exists $this->{host}) {
 		$this->throw("No remote RDBMS port specified") unless exists $this->{port};
 		$dsn .= ";hostname=$this->{host};port=$this->{port}";
 	}
 
 	# Build DBI::connect argument list
 	my @args = ($dsn);
-	if (exists $this->{username})
-	{
+	if (exists $this->{username}) {
 		push @args, $this->{username};
 		push @args, $this->{password} if exists $this->{password};
 	}
 
 	$this->{dbh} = DBI->connect(@args) or $this->throw("Cannot connect to database");
 
+	# Initialize other properties
+	$this->{last_insert_id} = undef;
+
 	return $this;
 }
 
-sub throw
-{
+sub throw {
 	my ($this, $err) = @_;
 
 	$err .=	"; DBI error: " . ($this->{dbh} && $DBI::err ? $DBI::errstr : "(none)") .
@@ -106,54 +103,45 @@ sub throw
 	die($err);
 }
 
-sub query
-{
+sub query {
 	my ($this, $sql, $type) = @_;
+	my $sth;
 
-	$this->{sth} = $this->{dbh}->prepare($sql)	or $this->throw("Cannot prepare query; SQL: $sql");
-	$this->{sth}->execute()				or $this->throw("Cannot execute query; SQL: $sql");
+	$sth = $this->{sth} = $this->{dbh}->prepare($sql)
+			or $this->throw("Cannot prepare query; SQL: $sql");
+	$sth->execute() or $this->throw("Cannot execute query; SQL: $sql");
 
-	if ($type == DB_COL)
-	{
-		my $field = ($this->{sth}->fetchrow)[0];
-		$this->{sth}->finish();
+	if ($type == DB_COL) {
+		my $field = ($sth->fetchrow)[0];
+		$sth->finish();
 		return $field;
-
 	} elsif ($type == DB_ROW) {
-
-		if ($DBH::rows) {
+		if ($sth->rows) {
 			my %row = ();
-			@row{@{ $this->{sth}->{NAME} }} = $this->{sth}->fetchrow;
-			$this->{sth}->finish();
+			@row{@{ $sth->{NAME} }} = $sth->fetchrow;
+			$sth->finish();
 			return %row;
 		} else {
-			$this->{sth}->finish();
+			$sth->finish();
 			return ();
 		}
-
 	} elsif ($type == DB_ROWS) {
-
-		$this->{rows} = $DBI::rows;
-		return $DBI::rows;
-
+		$this->{rows} = $sth->rows;
+		return $sth->rows;
 	} elsif ($type == DB_NULL) {
-
-		my $rows = $DBI::rows;
-		$this->{last_insert_id} = $this->{sth}->{insertid} if $this->{save_insert_id};
-		$this->{sth}->finish();
+		my $rows = $sth->rows;
+		$sth->finish();
 		return $rows;
 	} else {
 		$this->throw("Invalid query type; type: $type");
 	}
 }
 
-sub fetch_row
-{
+sub fetch_row {
 	my $obj = shift;
 	my %row = ();
 
-	unless ($obj->{"rows"}--)
-	{
+	unless ($obj->{"rows"}--) {
 		$obj->{"sth"}->finish();
 		return;
 	}
@@ -163,20 +151,14 @@ sub fetch_row
 	return %row;
 }
 
-sub prepare_str
-{
+sub prepare_str {
 	my ($this, $str, $type) = @_;
 
-	if ($type == SQL_REG)
-	{
+	if ($type == SQL_REG) {
 		$str =~ s/['"\\]/\\$&/g;
-
 	} elsif ($type == SQL_WILD) {
-
 		$str =~ s/['"\\_%]/\\$&/g;
-
 	} elsif ($type == SQL_REGEX) {
-
 		#$str =~ s/['"\\^\$()\[\]{+*?.]/\\$0/g;
 		$str = quotemeta($str);
 	} else {
@@ -187,8 +169,7 @@ sub prepare_str
 }
 
 =comment
-sub DESTROY
-{
+sub DESTROY {
 	my $this = shift;
 	$this->{dbh}->disconnect();
 	return;
