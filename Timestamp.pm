@@ -141,7 +141,7 @@ sub set
 	$this->{day}  = $parts{day}	if exists $parts{day};
 	$this->{mon}  = $parts{mon}	if exists $parts{mon};
 	$this->{yr}   = $parts{yr}	if exists $parts{yr};
-	# Do previous timezone translation?
+	# Do previous timezone offset conversion?
 	$this->{tz}   = $parts{tz}	if exists $parts{tz};
 
 	$this->_fix();
@@ -362,7 +362,7 @@ sub get_unix
 	my $this = shift;
 
 	return POSIX::mktime(
-		$this->sec, $this->min, $this->hr-1,
+		$this->sec, $this->min, $this->hr,
 		$this->day, $this->mon-1, $this->yr-1900);
 }
 
