@@ -27,6 +27,12 @@ use constant DB_ROW	=> 2;
 use constant DB_ROWS	=> 3;
 use constant DB_NULL	=> 4;
 
+# Not exported; good for DBH::COL, etc
+use constant COL	=> 1;
+use constant ROW	=> 2;
+use constant ROWS	=> 3;
+use constant NULL	=> 4;
+
 # Escape types
 use constant SQL_REG	=> 1;
 use constant SQL_WILD	=> 2;
