@@ -1,4 +1,5 @@
 package WASP;
+# $Id$
 
 use strict;
 use constant FALSE => 0;
@@ -11,9 +12,9 @@ sub new
 
 	return bless {
 		"die"		=> FALSE,
-		"log"		=> FALSE,
+		"log"		=> undef,
 		display		=> FALSE,
-		handler		=> FALSE,
+		handler		=> undef,
 		}, ref($class) || $class;
 }
 
@@ -70,7 +71,7 @@ sub throw
 			"; Date: " . localtime(time) .
 			"\n";
 	
-	if ($this->{"log"})
+	if (defined $this->{"log"})
 	{
 		local *F;
 		if (open F, ">> " . $this->{"log"})
@@ -91,7 +92,7 @@ sub throw
 		# Perhaps they want to catch die() in an eval?
 		# Who knows
 		CORE::die($errmsg);
-	} elsif ($this->{handler}) {
+	} elsif (defined $this->{handler}) {
 		@_ = ($errmsg);
 		goto &{$this->{handler}};
 	}

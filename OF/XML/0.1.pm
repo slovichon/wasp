@@ -1,4 +1,5 @@
 package OF::XML;
+# $Id$
 
 use OF;
 use XMLNode;

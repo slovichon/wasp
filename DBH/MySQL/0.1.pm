@@ -1,4 +1,5 @@
 package DBH::MySQL;
+# $Id$
 
 use DBH;
 use strict;

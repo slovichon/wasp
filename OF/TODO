@@ -1,0 +1,4 @@
+$Id$
+
+in OF::input() (select), options takes a hash. will loss of ordering matter?
+rename OF::Text to OF::Term?

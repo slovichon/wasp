@@ -1,4 +1,5 @@
 package OF::Text;
+# $Id$
 
 use OF;
 use strict;

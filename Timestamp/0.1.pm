@@ -1,4 +1,5 @@
 package Timestamp;
+# $Id$
 
 use POSIX;
 #use Timestamp::Diff;
