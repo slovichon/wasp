@@ -266,9 +266,21 @@ sub input
 
 		my $sel_el = XML::Element->new('select');
 
-		my $opt_el;
-		while (($key, $val) = each %options)
+		my $order;
+		
+		if ($prefs{order} && ref $prefs{order} eq "HASH")
 		{
+			$order = $prefs{order};
+			delete $prefs{order};
+		} else {
+			$order = [keys %options];
+		}
+
+		my $opt_el;
+		foreach $key (@$order)
+		{
+			$val = $options{$key};
+
 			$opt_el = XML::Element->new('option', $val);
 			$opt_el->set_attribute('value', $key);
 
