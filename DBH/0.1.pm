@@ -101,8 +101,8 @@ sub query
 {
 	my ($this, $sql, $type) = @_;
 
-	$this->{sth} = $this->{dbh}->prepare($sql)	or $this->handle_error("Cannot prepare query; SQL: $sql");
-	$this->{sth}->execute()				or $this->handle_error("Cannot execute query; SQL: $sql");
+	$this->{sth} = $this->{dbh}->prepare($sql)	or $this->throw("Cannot prepare query; SQL: $sql");
+	$this->{sth}->execute()				or $this->throw("Cannot execute query; SQL: $sql");
 
 	if ($type == DBH::DB_COL)
 	{
