@@ -295,7 +295,7 @@ sub list_start
 		OF::LIST_OD() => "ordered",
 	);
 
-	WASP::throw("Unknown list type; type: $type") unless exists $types{$type};
+	$this->{wasp}->throw("Unknown list type; type: $type") unless exists $types{$type};
 
 	return qq(<list type="$types{$type}">);
 }
