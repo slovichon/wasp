@@ -268,7 +268,7 @@ sub input
 
 		my $order;
 		
-		if ($prefs{order} && ref $prefs{order} eq "HASH")
+		if ($prefs{order} && ref $prefs{order} eq "ARRAY")
 		{
 			$order = $prefs{order};
 			delete $prefs{order};
