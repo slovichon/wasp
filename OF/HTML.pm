@@ -594,11 +594,37 @@ sub email
 {
 	my ($this, $email) = @_;
 
+	# We will try to make it "safe" to display
 	$email =~ s/[a-zA-Z0-9]/"&#".ord($&).";"/eg;
-	$email =~ s/@/<!-- \nbleh\n -->(at)<!-- \nbleh\n -->/;
-	$email =~ s/\./<!-- \nbleh\n -->[dot]<!-- \nbleh\n -->/g;
+	my $safe_email = $email;
+	$safe_email =~ s/@/<!-- \nbleh\n -->(at)<!-- \nbleh\n -->/;
+	$safe_email =~ s/\./<!-- \nbleh\n -->[dot]<!-- \nbleh\n -->/g;
 
-	return $email;
+	$email =~ /@/;
+	(my $before = $`) =~ s/['\\]/\\$&/g;	# JavaScript-escape e-mail components
+	(my $after  = $') =~ s/['\\]/\\$&/g;
+	$after =~ s/\./', '/g;
+
+	my $js_email = "";
+
+	$js_email =	qq!document.write('$before');! .
+			q!document.write('&#64;');! .
+			qq!document.write(['$after'].join('&#46;'));!;
+
+	return	qq!<script type="text/javascript">\n!.
+			qq{<!--\n} .
+			qq!document.write('<a href="mailto:');! .
+			$js_email .
+			qq!document.write('">');! .
+			$js_email .
+			qq!document.write('</a>');! .
+			qq{// -->} .
+		qq!</script>! .
+		qq!<noscript>! .
+			# If you're browser can't read JavaScript,
+			# then you don't get a link either.
+			$safe_email .
+		qq!</noscript>!;
 }
 
 return 1;
