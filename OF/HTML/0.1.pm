@@ -230,7 +230,7 @@ sub input
 	my ($this, %prefs) = @_;
 	my ($key, $val);
 
-	WASP::throw("Invalid input type") unless exists $prefs{type};
+	$this->{wasp}->throw("Invalid input type") unless exists $prefs{type};
 
 	if ($prefs{type} eq "select")
 	{
@@ -249,7 +249,7 @@ sub input
 
 			if (exists $prefs{value} && $prefs{value} eq $key)
 			{
-				$opt_node->set_attribute('default', 'default');
+				$opt_node->set_attribute('selected', 'selected');
 				delete $prefs{value};
 			}
 
@@ -261,7 +261,7 @@ sub input
 			$sel_node->set_attribute($key, $val);
 		}
 		
-		return $sel_node->output;
+		return $sel_node->build;
 		
 	} elsif ($prefs{type} eq "textarea") {
 
@@ -271,6 +271,7 @@ sub input
 
 		if (exists $prefs{value})
 		{
+#			$node->set_value(escapeHTML($prefs{value}));
 			$node->set_value($prefs{value});
 			delete $prefs{value};
 		}
@@ -304,13 +305,13 @@ sub input
 			delete $prefs{checked}
 		}
 =cut
-
+=comment
 		if (exists $prefs{value})
 		{
 			$node->set_value($prefs{value});
 			delete $prefs{value};
 		}
-
+=cut
 		while (($key, $val) = each %prefs)
 		{
 			$node->set_attribute($key, $val);
@@ -318,7 +319,7 @@ sub input
 
 		if (defined $label)
 		{
-			$node = XMLNode->new('label', $label . " " . $node->build());
+			$node = XMLNode->new('label', $node->build() . " $label");
 			$node->set_attribute('for', $prefs{id});
 		}
 
@@ -349,7 +350,7 @@ sub list_start
 		OF::LIST_UN() => "ul",
 	);
 
-	WASP::throw("Unknown list type; type: $type") unless exists $types{$type};
+	$this->{wasp}->throw("Unknown list type; type: $type") unless exists $types{$type};
 
 	return "<$types{$type}>";
 }
@@ -364,7 +365,7 @@ sub list_end
 		OF::LIST_UN() => "ul",
 	);
 
-	WASP::throw("Unknown list type; type: $type") unless exists $types{$type};
+	$this->{wasp}->throw("Unknown list type; type: $type") unless exists $types{$type};
 
 	return "</$types{$type}>";
 }
@@ -389,9 +390,10 @@ sub header
 
 	$this->_getprefs('header', $r_prefs);
 
-	WASP::throw("Unknown header size") unless exists $prefs{size};
+	$this->{wasp}->throw("Unknown header size") unless exists $r_prefs->{size};
 
-	my $tag = "h$size";
+	my $tag = "h" . $r_prefs->{size};
+	delete $r_prefs->{size};
 
 	my $node = XMLNode->new($tag, join '', @data);
 
@@ -545,7 +547,7 @@ sub email
 {
 	my ($this, $email) = @_;
 
-	$email =~ s/@/<!-- \nbleh\n -->[at]<!-- \nbleh\n -->/;
+	$email =~ s/@/<!-- \nbleh\n -->(at)<!-- \nbleh\n -->/;
 	$email =~ s/\./<!-- \nbleh\n -->[dot]<!-- \nbleh\n -->/g;
 
 	return $email;

@@ -17,44 +17,42 @@ our %EXPORT_OK = (
 
 sub new
 {
-	my ($class, $r_prefs) = shift;
-	my $this = bless $r_prefs, ref($class) || $class;
-	
-#	my $this = bless {}, ref($class) || $class;
-=comment
-	my ($elem, $r_vals, $name, $val);
-
+	my ($class, $wasp, $r_prefs) = @_;
 	$r_prefs = {} unless ref $r_prefs eq "HASH";
-	
-	while (($elem, $r_vals) = each %$r_prefs)
-	{
-		$r_vals = {} unless ref $r_vals eq "HASH";
-
-		while (($name, $val) = each %$r_vals)
-		{
-			$this->_loadpref($elem, $name, $val);
-		}
-	}
-=cut	
-	return $this;
+	return bless {
+			wasp  => $wasp,
+			prefs => $r_prefs,
+		}, ref($class) || $class;
 }
 
 sub _getprefs
 {
-	my ($this,$elem,$r_prefs) = @_;
+	my ($this, $elem, $r_prefs) = @_;
 
-	if (exists $this->{$elem} && ref $this->{$elem} eq "HASH")
+	if (exists $this->{prefs}{$elem})
 	{
-#		$prefs{keys %{$this->{$elem}} = values %{$this->{$elem};
+# We can't assign:
+#
+#		%$r_prefs = $this->{prefs}{$elem};
+#
+# because it will wipe out %$r_prefs, and the values
+# must be preserved.
 
-		my ($key,$val);
-		while (($key,$val) = each %{ $this->{$elem} })
+# This:
+#
+#		@$r_prefs->{keys %{ $this->{prefs}{$elem} }} = values %{ $this->{prefs}{$elem} };
+#
+# can't be used either, since it will overwrite presented
+# preferences.
+
+		my ($key, $val);
+		while (($key, $val) = each %{ $this->{prefs}{$elem} })
 		{
-			$r_prefs->{$key} = $val;
+			$r_prefs->{$key} = $val unless defined $r_prefs->{$key};
 		}
 	}
 
-	return $r_prefs;
+	return;
 }
 
 =comment
@@ -71,9 +69,9 @@ sub _loadpref
 # Abstract methods
 sub form
 {
-	my ($this,$r_prefs,@data) = @_;
+	my ($this, $r_prefs, @data) = @_;
 	return	$this->form_start(%$r_prefs) .
-		join('',@data) .
+		join('', @data) .
 		$this->form_end(%$r_prefs);
 }
 
@@ -83,13 +81,13 @@ sub fieldset;
 
 sub table
 {
-	my ($this,$r_prefs,@data) = @_;
+	my ($this, $r_prefs, @data) = @_;
 	
 	# First pref arg is optional
 	unshift @data, $r_prefs unless ref $r_prefs eq "HASH";
 	
 	return	$this->table_start(%$r_prefs) .
-		join('',@data) .
+		join('', @data) .
 		$this->table_end(%$r_prefs);
 }
 
@@ -105,15 +103,13 @@ sub br;
 
 sub list
 {
-	my ($this,$type,@data) = @_;
+	my ($this, $type, @data) = @_;
 	
 	# First pref arg is optional
 #	unshift @data, $r_prefs unless ref $r_prefs eq "HASH";
 
 	my $out = $this->list_start($type);
-	
 	$out .= $this->list_item($_) foreach @data;
-		
 	$out .= $this->list_end($type);
 
 	return $out;
@@ -131,4 +127,4 @@ sub div;
 sub img;
 sub email;
 
-exit 0;
+return 1;
