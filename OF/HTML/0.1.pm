@@ -177,6 +177,15 @@ sub link
 		delete $prefs{value};
 	}
 
+	my @test = %prefs;
+	if (@test == 2 && $test[0] ne "name")
+	{
+		%prefs = (
+			value => $test[0],
+			href  => $test[1],
+		);
+	}
+	
 	my ($key, $val);
 	while (($key, $val) = each %prefs)
 	{
