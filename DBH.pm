@@ -2,7 +2,7 @@ package DBH;
 # $Id$
 
 use Exporter;
-#use DBI;
+use DBI;
 use strict;
 
 our $VERSION = 0.1;
