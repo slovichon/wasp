@@ -116,7 +116,7 @@ sub query {
 		$sth->finish();
 		return $field;
 	} elsif ($type == DB_ROW) {
-		if ($sth->rows) {
+		if ($sth->rows > 0) {
 			my %row = ();
 			@row{@{ $sth->{NAME} }} = $sth->fetchrow;
 			$sth->finish();
